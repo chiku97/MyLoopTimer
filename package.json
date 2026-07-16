@@ -1,0 +1,19 @@
+{
+  "name": "my-loop-timer",
+  "version": "1.0.0",
+  "description": "A premium looping timer app that notifies me on loop via native OS toast notifications.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "timer",
+    "loop",
+    "pwa",
+    "notifications",
+    "native-toast"
+  ],
+  "author": "",
+  "license": "MIT"
+}

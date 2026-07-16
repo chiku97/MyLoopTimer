@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bg-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#090514" />
+    </radialGradient>
+    
+    <!-- Neon Ring Gradient -->
+    <linearGradient id="neon-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#ec4899" />
+    </linearGradient>
+
+    <!-- Drop Shadow Filter for Glow Effect -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="512" height="512" rx="128" fill="url(#bg-glow)" />
+
+  <!-- Outer Glowing Timer Loop Ring -->
+  <path d="M 256,90 
+           A 166,166 0 1,1 120,350
+           M 140,320 
+           A 130,130 0 1,0 256,126" 
+        fill="none" 
+        stroke="url(#neon-ring)" 
+        stroke-width="20" 
+        stroke-linecap="round"
+        filter="url(#glow)" />
+
+  <!-- Arrow head to indicate Loop -->
+  <path d="M 256,50 L 296,100 L 216,100 Z" 
+        fill="url(#neon-ring)" 
+        transform="rotate(25, 256, 90)"
+        filter="url(#glow)" />
+
+  <!-- Inner Stopwatch Center Elements -->
+  <!-- Stopwatch Crown -->
+  <rect x="236" y="40" width="40" height="24" rx="6" fill="#f8fafc" />
+  <!-- Stopwatch Button Right -->
+  <rect x="325" y="65" width="24" height="16" rx="4" transform="rotate(30, 325, 65)" fill="#94a3b8" />
+  
+  <!-- Hour/Minute hands -->
+  <circle cx="256" cy="270" r="16" fill="#f8fafc" />
+  <line x1="256" y1="270" x2="256" y2="190" stroke="#f8fafc" stroke-width="12" stroke-linecap="round" />
+  <line x1="256" y1="270" x2="310" y2="300" stroke="#a855f7" stroke-width="10" stroke-linecap="round" />
+</svg>

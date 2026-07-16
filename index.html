@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loop Timer | Native OS Notifications</title>
+  <meta name="description" content="A premium, high-reliability looping timer that triggers native OS desktop notifications. Designed with background thread accuracy and a premium dark glassmorphic design.">
+  
+  <!-- PWA & Favicon -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#6366f1">
+  
+  <!-- Stylesheets & Google Fonts -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="glow-container">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+  </div>
+
+  <main class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <svg class="header-logo" viewBox="0 0 512 512" width="40" height="40">
+          <path d="M 256,90 A 166,166 0 1,1 120,350 M 140,320 A 130,130 0 1,0 256,126" fill="none" stroke="#a855f7" stroke-width="32" stroke-linecap="round" />
+          <path d="M 256,50 L 296,100 L 216,100 Z" fill="#6366f1" transform="rotate(25, 256, 90)" />
+          <circle cx="256" cy="270" r="24" fill="#f8fafc" />
+        </svg>
+        <h1>Loop Timer</h1>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Install App PWA Button -->
+        <button id="btn-install" class="btn btn-secondary hidden" title="Install App on Desktop">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Install App
+        </button>
+
+        <!-- Notification Status Toggle Badge -->
+        <button id="btn-notification-badge" class="badge-notification warning" title="Configure OS Notifications">
+          <span class="pulse-dot"></span>
+          <span id="notification-badge-text">Notifications Blocked</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <!-- Left Column: Display and Basic Controls -->
+      <section class="card glass timer-card">
+        <!-- Circular Progress Timer -->
+        <div class="timer-display-wrapper">
+          <svg class="progress-ring" viewBox="0 0 200 200">
+            <defs>
+              <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1" />
+                <stop offset="50%" stop-color="#a855f7" />
+                <stop offset="100%" stop-color="#ec4899" />
+              </linearGradient>
+            </defs>
+            <circle class="progress-ring-bg" cx="100" cy="100" r="90" />
+            <circle id="progress-ring-bar" class="progress-ring-bar" cx="100" cy="100" r="90" />
+          </svg>
+          <div class="timer-text-content">
+            <div id="timer-status" class="timer-status">Ready</div>
+            <div id="timer-countdown" class="timer-countdown">00:00:00</div>
+            <div id="timer-loop-count" class="timer-loop-count">Loop 0 / --</div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="timer-controls">
+          <button id="btn-start" class="btn btn-primary btn-large" title="Start Timer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            Start
+          </button>
+          
+          <button id="btn-pause" class="btn btn-warning btn-large hidden" title="Pause Timer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+            Pause
+          </button>
+
+          <button id="btn-reset" class="btn btn-danger btn-large" disabled title="Reset Timer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            Reset
+          </button>
+        </div>
+      </section>
+
+      <!-- Right Column: Settings & Configuration -->
+      <div class="settings-column">
+        <section class="card glass settings-card">
+          <h2>Timer Settings</h2>
+          
+          <!-- Interval Setting -->
+          <div class="setting-group">
+            <label>Loop Duration</label>
+            <div class="time-inputs">
+              <div class="input-container">
+                <input type="number" id="input-hours" min="0" max="99" value="0" placeholder="00">
+                <span>hr</span>
+              </div>
+              <div class="input-container">
+                <input type="number" id="input-minutes" min="0" max="59" value="0" placeholder="05">
+                <span>min</span>
+              </div>
+              <div class="input-container">
+                <input type="number" id="input-seconds" min="0" max="59" value="10" placeholder="00">
+                <span>sec</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loops Limit Setting -->
+          <div class="setting-group">
+            <label for="input-loops-limit">Number of Loops</label>
+            <div class="loops-limit-wrapper">
+              <input type="number" id="input-loops-limit" min="1" max="999" value="5" disabled>
+              <div class="checkbox-container">
+                <input type="checkbox" id="chk-infinite-loops" checked>
+                <label for="chk-infinite-loops">Infinite Loop</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notification Options -->
+          <div class="setting-group">
+            <label>Alert & Notifications</label>
+            
+            <div class="notification-prompt-box" id="box-notify-prompt">
+              <p>To receive background notifications, you need to allow native OS permissions.</p>
+              <button id="btn-request-permission" class="btn btn-accent btn-small">Grant OS Permissions</button>
+            </div>
+
+            <div class="audio-controls">
+              <div class="select-container">
+                <label for="select-sound">Alert Sound</label>
+                <select id="select-sound">
+                  <option value="bell">Digital Bell (Synthesized)</option>
+                  <option value="chime">Cyber Chime (Synthesized)</option>
+                  <option value="pulse">Deep Pulse (Synthesized)</option>
+                  <option value="beep">Beep (Synthesized)</option>
+                  <option value="none">Mute (Notification Only)</option>
+                </select>
+              </div>
+              <div class="volume-slider-container">
+                <label for="slider-volume">Volume</label>
+                <div class="volume-row">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+                  <input type="range" id="slider-volume" min="0" max="1" step="0.05" value="0.7">
+                  <span id="volume-val">70%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wake Lock Option -->
+          <div class="setting-group checkbox-row">
+            <div class="checkbox-container">
+              <input type="checkbox" id="chk-wake-lock" checked>
+              <label for="chk-wake-lock" title="Keep device screen awake while timer is running">Keep Screen Awake (Wake Lock)</label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Troubleshooting OS Notifications Drawer -->
+        <section class="card glass guide-card">
+          <div class="guide-header" id="guide-header-toggle">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              Windows & OS Notification Guide
+            </h2>
+            <svg class="chevron-icon" id="guide-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="guide-content collapsed" id="guide-drawer">
+            <p>If you aren't receiving notifications from the OS, ensure the following settings are configured on your system:</p>
+            <ul>
+              <li>
+                <strong>Browser Permissions:</strong> Click the lock/settings icon next to the URL in the address bar and verify that <strong>Notifications</strong> are set to <em>Allow</em>.
+              </li>
+              <li>
+                <strong>Windows Focus Assist / Focus Settings:</strong> Search for "Focus Settings" or "Do Not Disturb" in Windows Search. If active, Windows silences all browser/app banners. Make sure it is toggled <strong>Off</strong>.
+              </li>
+              <li>
+                <strong>Windows Notification Center:</strong> Navigate to <em>Settings &gt; System &gt; Notifications</em>. Verify that notifications are enabled globally, and that your browser (e.g., Chrome, Edge) is allowed to send banner/sound notifications.
+              </li>
+              <li>
+                <strong>Standalone Installation (Highly Recommended):</strong> Click <strong>Install App</strong> in the top header. Running it as an installed Windows app lets the OS treat it like a native calendar or mail client, improving notification reliability.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- History / Log Card -->
+        <section class="card glass log-card">
+          <div class="log-header">
+            <h2>Loop Activity Log</h2>
+            <button id="btn-clear-log" class="btn btn-danger btn-small">Clear</button>
+          </div>
+          <div class="log-container" id="log-list">
+            <div class="empty-log-msg">No loops completed yet. Ready to record logs.</div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  
+  <footer class="app-footer">
+    <p>Loop Timer &copy; 2026. High-Reliability Native OS Toast Notification Engine.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
