@@ -1,4 +1,4 @@
-const CACHE_NAME = 'loop-timer-v1';
+const CACHE_NAME = 'loop-timer-v2';
 const ASSETS = [
   './',
   './styles.css',

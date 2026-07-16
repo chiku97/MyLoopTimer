@@ -278,6 +278,41 @@ function playSoundAlert() {
   }
 }
 
+let silentOsc = null;
+let silentGain = null;
+
+function startSilentAudioPlay() {
+  initAudio();
+  if (silentOsc) return;
+  
+  silentOsc = audioCtx.createOscillator();
+  silentGain = audioCtx.createGain();
+  
+  silentOsc.frequency.setValueAtTime(440, audioCtx.currentTime);
+  silentGain.gain.setValueAtTime(0.00001, audioCtx.currentTime); // completely inaudible
+  
+  silentOsc.connect(silentGain);
+  silentGain.connect(audioCtx.destination);
+  
+  silentOsc.start(0);
+}
+
+function stopSilentAudioPlay() {
+  if (silentOsc) {
+    try {
+      silentOsc.stop();
+      silentOsc.disconnect();
+    } catch(e) {}
+    silentOsc = null;
+  }
+  if (silentGain) {
+    try {
+      silentGain.disconnect();
+    } catch(e) {}
+    silentGain = null;
+  }
+}
+
 // ==========================================
 // 4. Timer Logic and Web Worker Lifecycle
 // ==========================================
@@ -335,6 +370,9 @@ function startTimer() {
     timerWorker.postMessage({ action: 'start', value: totalSecondsPerLoop });
     timerState = 'running';
     
+    // Start silent background audio to prevent CPU suspension
+    startSilentAudioPlay();
+    
     addLog('Timer Started', `Loop 1 of ${isInfinite ? '∞' : totalLoops} (${formatSeconds(totalSecondsPerLoop)})`);
   } 
   
@@ -342,6 +380,10 @@ function startTimer() {
     requestWakeLock();
     timerWorker.postMessage({ action: 'resume' });
     timerState = 'running';
+    
+    // Resume silent background audio
+    startSilentAudioPlay();
+    
     addLog('Timer Resumed', `Continuing loop ${currentLoop}`);
   }
   
@@ -354,6 +396,7 @@ function pauseTimer() {
   timerWorker.postMessage({ action: 'pause' });
   timerState = 'paused';
   releaseWakeLock();
+  stopSilentAudioPlay();
   updateControlsUI();
   addLog('Timer Paused', `Paused at ${formatSeconds(secondsRemaining)}`);
 }
@@ -375,6 +418,7 @@ function resetTimerState() {
   currentLoop = 0;
   secondsRemaining = 0;
   
+  stopSilentAudioPlay();
   updateCountdownDisplay(0);
   updateProgressRing(0);
   updateControlsUI();
@@ -434,13 +478,21 @@ function triggerOSNotification(loopNumber, customBody) {
   title = title.replace(/{loop}/gi, loopNumber);
   body = body.replace(/{loop}/gi, loopNumber);
   
+  // Vibrate the physical device if API is supported (front-end alert)
+  if (navigator.vibrate) {
+    navigator.vibrate([300, 100, 300]);
+  }
+
+  const isHidden = document.visibilityState === 'hidden' || document.visibilityState === 'prerender';
+  
   const options = {
     body: body,
     icon: './icon.svg',
     badge: './icon.svg',
     tag: 'loop-timer-toast',
     renotify: true,
-    silent: true // We control sound playing in app.js via Web Audio Synth
+    silent: !isHidden, // Silent if app is open (in-app chime handles sound), aloud/vibrate if minimized in background
+    vibrate: [300, 100, 300] // Vibrate: 300ms on, 100ms off, 300ms on
   };
 
   // Check visibility and dispatch to service worker if backgrounded
