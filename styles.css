@@ -795,6 +795,121 @@ body {
   font-size: 0.8rem;
 }
 
+/* Quick Presets styling */
+.preset-wrapper {
+  margin-bottom: 0.75rem;
+}
+
+.preset-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.btn-preset {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-preset:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.btn-preset.active {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-color: transparent;
+  color: var(--text-main);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+}
+
+.btn-preset:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Custom Notification configuration inputs */
+.custom-notify-config {
+  background-color: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.custom-notify-fields {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field-group label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.field-group input[type="text"], 
+.field-group textarea {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.field-group input[type="text"]:focus, 
+.field-group textarea:focus {
+  border-color: var(--primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.field-hint code {
+  font-family: var(--font-mono);
+  background-color: rgba(255, 255, 255, 0.08);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  color: var(--accent);
+}
+
 /* Helper utilities */
 .hidden {
   display: none !important;

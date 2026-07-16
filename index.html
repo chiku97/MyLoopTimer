@@ -100,6 +100,17 @@
           <!-- Interval Setting -->
           <div class="setting-group">
             <label>Loop Duration</label>
+            <div class="preset-wrapper">
+              <span class="preset-label">Quick Presets</span>
+              <div class="preset-row">
+                <button type="button" class="btn-preset" data-secs="300">5m</button>
+                <button type="button" class="btn-preset" data-secs="600">10m</button>
+                <button type="button" class="btn-preset" data-secs="900">15m</button>
+                <button type="button" class="btn-preset" data-secs="1200">20m</button>
+                <button type="button" class="btn-preset" data-secs="1500">25m</button>
+                <button type="button" class="btn-preset" data-secs="1800">30m</button>
+              </div>
+            </div>
             <div class="time-inputs">
               <div class="input-container">
                 <input type="number" id="input-hours" min="0" max="99" value="0" placeholder="00">
@@ -135,6 +146,26 @@
             <div class="notification-prompt-box" id="box-notify-prompt">
               <p>To receive background notifications, you need to allow native OS permissions.</p>
               <button id="btn-request-permission" class="btn btn-accent btn-small">Grant OS Permissions</button>
+            </div>
+
+            <!-- Custom Notification Message Toggle and Inputs -->
+            <div class="custom-notify-config">
+              <div class="checkbox-container">
+                <input type="checkbox" id="chk-custom-notify">
+                <label for="chk-custom-notify" title="Change the text displayed in OS notifications">Customize Notification Text</label>
+              </div>
+              
+              <div id="custom-notify-fields" class="custom-notify-fields hidden">
+                <div class="field-group">
+                  <label for="input-notify-title">Alert Title</label>
+                  <input type="text" id="input-notify-title" placeholder="Loop Timer Completed!">
+                </div>
+                <div class="field-group">
+                  <label for="input-notify-body">Alert Message</label>
+                  <textarea id="input-notify-body" rows="2" placeholder="Loop #{loop} has finished. Next loop starting now!"></textarea>
+                  <small class="field-hint">Use <code>{loop}</code> to insert the current loop number.</small>
+                </div>
+              </div>
             </div>
 
             <div class="audio-controls">

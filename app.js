@@ -55,6 +55,13 @@ const guideChevron = document.getElementById('guide-chevron');
 const logList = document.getElementById('log-list');
 const btnClearLog = document.getElementById('btn-clear-log');
 
+// New Custom Notification and Preset Elements
+const chkCustomNotify = document.getElementById('chk-custom-notify');
+const customNotifyFields = document.getElementById('custom-notify-fields');
+const inputNotifyTitle = document.getElementById('input-notify-title');
+const inputNotifyBody = document.getElementById('input-notify-body');
+const btnPresets = document.querySelectorAll('.btn-preset');
+
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
   initPWA();
@@ -405,8 +412,27 @@ function handleLoopCompletion() {
 
 // OS Notification Generator
 function triggerOSNotification(loopNumber, customBody) {
-  const title = `Loop Timer Completed!`;
-  const body = customBody || `Loop #${loopNumber} has finished. Next loop starting now!`;
+  let title = `Loop Timer Completed!`;
+  let body = customBody || `Loop #${loopNumber} has finished. Next loop starting now!`;
+
+  // Custom Notifications config override
+  if (chkCustomNotify && chkCustomNotify.checked) {
+    const customTitle = inputNotifyTitle.value.trim();
+    const customBodyText = inputNotifyBody.value.trim();
+    
+    if (customBody && customBody.includes('Finished all')) {
+      // It's the final complete alert
+      title = customTitle ? `[Done] ${customTitle}` : 'All Loops Done!';
+      body = customBody;
+    } else {
+      title = customTitle || 'Loop Timer Completed!';
+      body = customBodyText || 'Loop #{loop} has finished. Next loop starting now!';
+    }
+  }
+
+  // Format templates using regex replacements
+  title = title.replace(/{loop}/gi, loopNumber);
+  body = body.replace(/{loop}/gi, loopNumber);
   
   const options = {
     body: body,
@@ -525,6 +551,47 @@ function initEventListeners() {
 
   // Clear Log
   btnClearLog.addEventListener('click', clearLogs);
+
+  // Quick Preset buttons event listeners
+  btnPresets.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (timerState !== 'idle') return;
+      
+      const secs = parseInt(btn.dataset.secs);
+      const h = Math.floor(secs / 3600);
+      const m = Math.floor((secs % 3600) / 60);
+      const s = secs % 60;
+      
+      hoursInput.value = h;
+      minutesInput.value = m;
+      secondsInput.value = s;
+      
+      btnPresets.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      // Trigger a brief preview sync of the countdown ring/text
+      totalSecondsPerLoop = secs;
+      updateCountdownDisplay(secs);
+      updateProgressRing(secs);
+    });
+  });
+
+  // Clear presets active state when typing manually
+  const clearActivePresets = () => {
+    btnPresets.forEach(b => b.classList.remove('active'));
+  };
+  hoursInput.addEventListener('input', clearActivePresets);
+  minutesInput.addEventListener('input', clearActivePresets);
+  secondsInput.addEventListener('input', clearActivePresets);
+
+  // Custom Notifications config toggle
+  chkCustomNotify.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      customNotifyFields.classList.remove('hidden');
+    } else {
+      customNotifyFields.classList.add('hidden');
+    }
+  });
 }
 
 function updateCountdownDisplay(totalSeconds) {
@@ -572,6 +639,7 @@ function updateControlsUI() {
     secondsInput.disabled = true;
     infiniteLoopsChk.disabled = true;
     loopsLimitInput.disabled = true;
+    btnPresets.forEach(btn => btn.disabled = true);
     
     timerStatus.innerText = 'Running';
     timerStatus.className = 'timer-status active';
@@ -598,6 +666,7 @@ function updateControlsUI() {
     secondsInput.disabled = false;
     infiniteLoopsChk.disabled = false;
     loopsLimitInput.disabled = infiniteLoopsChk.checked;
+    btnPresets.forEach(btn => btn.disabled = false);
     
     timerStatus.innerText = 'Ready';
     timerStatus.className = 'timer-status';
