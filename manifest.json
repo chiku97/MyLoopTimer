@@ -2,7 +2,7 @@
   "name": "Loop Timer",
   "short_name": "LoopTimer",
   "description": "A premium looping timer app that delivers native OS notifications on desktop and mobile.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#090514",
   "theme_color": "#6366f1",
