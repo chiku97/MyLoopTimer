@@ -1,7 +1,6 @@
 const CACHE_NAME = 'loop-timer-v1';
 const ASSETS = [
   './',
-  './index.html',
   './styles.css',
   './app.js',
   './timer-worker.js',
@@ -42,7 +41,7 @@ self.addEventListener('fetch', (e) => {
       return cachedResponse || fetch(e.request).catch(() => {
         // Return cached index.html as fallback if fetch fails
         if (e.request.mode === 'navigate') {
-          return caches.match('./index.html');
+          return caches.match('./');
         }
       });
     })
