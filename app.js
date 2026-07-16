@@ -278,38 +278,28 @@ function playSoundAlert() {
   }
 }
 
-let silentOsc = null;
-let silentGain = null;
+let silentAudioElement = null;
 
 function startSilentAudioPlay() {
   initAudio();
-  if (silentOsc) return;
+  if (!silentAudioElement) {
+    // 1-second silent WAV file data URI
+    silentAudioElement = new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==');
+    silentAudioElement.loop = true;
+    silentAudioElement.volume = 0.05; // Low volume, silent audio clip
+  }
   
-  silentOsc = audioCtx.createOscillator();
-  silentGain = audioCtx.createGain();
-  
-  silentOsc.frequency.setValueAtTime(440, audioCtx.currentTime);
-  silentGain.gain.setValueAtTime(0.00001, audioCtx.currentTime); // completely inaudible
-  
-  silentOsc.connect(silentGain);
-  silentGain.connect(audioCtx.destination);
-  
-  silentOsc.start(0);
+  silentAudioElement.play()
+    .then(() => console.log('Silent audio keep-alive started.'))
+    .catch(err => console.warn('Could not start silent audio keep-alive:', err));
 }
 
 function stopSilentAudioPlay() {
-  if (silentOsc) {
+  if (silentAudioElement) {
     try {
-      silentOsc.stop();
-      silentOsc.disconnect();
-    } catch(e) {}
-    silentOsc = null;
-  }
-  if (silentGain) {
-    try {
-      silentGain.disconnect();
-    } catch(e) {}
-    silentGain = null;
+      silentAudioElement.pause();
+      silentAudioElement.currentTime = 0;
+    } catch (e) {}
   }
 }
 
@@ -443,6 +433,7 @@ function handleLoopCompletion() {
       if (timerState === 'running' && timerWorker) {
         timerWorker.postMessage({ action: 'start', value: totalSecondsPerLoop });
         updateCountdownDisplay(totalSecondsPerLoop);
+        timerLoopCount.innerText = `Loop ${currentLoop} / ${isInfinite ? '∞' : totalLoops}`;
         addLog('Loop Started', `Starting loop ${currentLoop} of ${isInfinite ? '∞' : totalLoops}`);
       }
     }, 200);
@@ -495,34 +486,32 @@ function triggerOSNotification(loopNumber, customBody) {
     vibrate: [300, 100, 300] // Vibrate: 300ms on, 100ms off, 300ms on
   };
 
-  // Check visibility and dispatch to service worker if backgrounded
-  if (document.visibilityState === 'hidden' || document.visibilityState === 'prerender') {
+  // Trigger the notification using Service Worker registration if available, fallback to Notification constructor
+  if (Notification.permission === 'granted') {
     if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
       navigator.serviceWorker.ready.then(reg => {
-        reg.active.postMessage({
-          type: 'SHOW_NOTIFICATION',
-          title: title,
-          options: options
-        });
+        reg.showNotification(title, options);
+      }).catch(err => {
+        console.warn('Service worker showNotification failed, trying fallback:', err);
+        showFallbackNotification(title, options);
       });
+    } else {
+      showFallbackNotification(title, options);
     }
   } else {
-    // Normal browser notification
-    if (Notification.permission === 'granted') {
-      try {
-        new Notification(title, {
-          ...options,
-          silent: false // let system play default chime if it wants
-        });
-      } catch (e) {
-        // Fallback for browsers that don't support new Notification constructor (e.g. mobile Safari / Android chrome)
-        if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
-          navigator.serviceWorker.ready.then(reg => {
-            reg.showNotification(title, options);
-          });
-        }
-      }
-    }
+    console.warn('Notifications permission is not granted. Cannot show alert.');
+  }
+}
+
+function showFallbackNotification(title, options) {
+  try {
+    new Notification(title, {
+      ...options,
+      // If we are calling fallback, ensure it respects silent settings
+      silent: options.silent
+    });
+  } catch (e) {
+    console.error('Fallback Notification creation failed:', e);
   }
 }
 
@@ -551,10 +540,15 @@ function releaseWakeLock() {
   }
 }
 
-// Re-request wake lock if tab becomes visible again
+// Re-request wake lock and trigger instant timer catch-up if tab becomes visible again
 document.addEventListener('visibilitychange', async () => {
-  if (wakeLock !== null && document.visibilityState === 'visible') {
-    await requestWakeLock();
+  if (document.visibilityState === 'visible') {
+    if (wakeLock !== null) {
+      await requestWakeLock();
+    }
+    if (timerState === 'running' && timerWorker) {
+      timerWorker.postMessage({ action: 'request_tick' });
+    }
   }
 });
 
